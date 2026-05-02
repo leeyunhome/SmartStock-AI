@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockPulse | Premium Market Dashboard</title>
+    <meta name="description" content="실시간 주식 지수 정보와 프리미엄 시장 분석 대시보드">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header>
+            <div class="logo">
+                <div class="logo-placeholder">Logo</div>
+                <h1>StockPulse</h1>
+            </div>
+            <nav>
+                <div class="search-bar">
+                    <select id="exchange-select">
+                        <option value="US">US</option>
+                        <option value="KS">KOSPI</option>
+                        <option value="KQ">KOSDAQ</option>
+                        <option value="SPX">S&P 500</option>
+                    </select>
+                    <input type="text" id="ticker-input" placeholder="티커 또는 종목번호 입력">
+                    <button id="search-btn">검색</button>
+                </div>
+                <div class="market-status">
+                    <span class="status-dot"></span>
+                    시장 운영 중
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <section id="search-result-container" class="search-result-section" style="display: none;">
+                <div class="card result-card">
+                    <div class="card-header">
+                        <h2 id="result-name">Search Result</h2>
+                        <span class="index-value" id="result-value">0.00</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="index-change" id="result-change">0.00 (0.00%)</span>
+                        <div class="chart-container result-chart-container">
+                            <canvas id="resultChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="summary-cards">
+                <div class="card" id="kospi-card">
+                    <div class="card-header">
+                        <h2>KOSPI</h2>
+                        <span class="index-value" id="kospi-value">2,543.21</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="index-change" id="kospi-change">+12.45 (0.49%)</span>
+                        <div class="chart-container">
+                            <canvas id="kospiChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" id="kosdaq-card">
+                    <div class="card-header">
+                        <h2>KOSDAQ</h2>
+                        <span class="index-value" id="kosdaq-value">845.67</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="index-change" id="kosdaq-change">-2.31 (-0.27%)</span>
+                        <div class="chart-container">
+                            <canvas id="kosdaqChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" id="nasdaq-card">
+                    <div class="card-header">
+                        <h2>NASDAQ</h2>
+                        <span class="index-value" id="nasdaq-value">16,274.94</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="index-change" id="nasdaq-change">+145.22 (0.90%)</span>
+                        <div class="chart-container">
+                            <canvas id="nasdaqChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" id="sp500-card">
+                    <div class="card-header">
+                        <h2>S&P 500</h2>
+                        <span class="index-value" id="sp500-value">5,123.41</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="index-change" id="sp500-change">+24.12 (0.47%)</span>
+                        <div class="chart-container">
+                            <canvas id="sp500Chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bottom-info">
+                <div class="info-item">
+                    <h3>Market Insights</h3>
+                    <p>현재 글로벌 시장은 기술주 중심의 강한 매수세가 유입되고 있습니다. 주요 경제 지표 발표를 앞두고 관망세가 짙어질 수 있습니다.</p>
+                </div>
+                <div class="info-item">
+                    <h3>AI Forecast</h3>
+                    <p>나스닥 지수는 단기 저항선인 16,500선을 돌파할 가능성이 72%로 예측됩니다.</p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 StockPulse. All rights reserved. Data is for demonstration purposes.</p>
+        </footer>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
