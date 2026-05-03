@@ -1,8 +1,8 @@
 const indices = {
-    kospi: { symbol: '^KS11', id: 'kospiChart', valueId: 'kospi-value', changeId: 'kospi-change', data: [], color: '#00ffa3', fallback: 2750 },
-    kosdaq: { symbol: '^KQ11', id: 'kosdaqChart', valueId: 'kosdaq-value', changeId: 'kosdaq-change', data: [], color: '#ff4d4d', fallback: 850 },
-    nasdaq: { symbol: '^IXIC', id: 'nasdaqChart', valueId: 'nasdaq-value', changeId: 'nasdaq-change', data: [], color: '#00ffa3', fallback: 16500 },
-    sp500: { symbol: '^GSPC', id: 'sp500Chart', valueId: 'sp500-value', changeId: 'sp500-change', data: [], color: '#00ffa3', fallback: 5200 }
+    kospi: { symbol: '^KS11', id: 'kospiChart', valueId: 'kospi-value', changeId: 'kospi-change', data: [], color: '#00ffa3', fallback: 2750, displayName: '코스피' },
+    kosdaq: { symbol: '^KQ11', id: 'kosdaqChart', valueId: 'kosdaq-value', changeId: 'kosdaq-change', data: [], color: '#ff4d4d', fallback: 850, displayName: '코스닥' },
+    nasdaq: { symbol: '^IXIC', id: 'nasdaqChart', valueId: 'nasdaq-value', changeId: 'nasdaq-change', data: [], color: '#00ffa3', fallback: 16500, displayName: '나스닥' },
+    sp500: { symbol: '^GSPC', id: 'sp500Chart', valueId: 'sp500-value', changeId: 'sp500-change', data: [], color: '#00ffa3', fallback: 5200, displayName: 'S&P 500' }
 };
 
 const charts = {};
@@ -70,7 +70,7 @@ async function initCharts() {
 
 async function fetchIndexData(key) {
     const index = indices[key];
-    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${index.symbol}?interval=5m&range=1d`;
+    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${index.symbol}?interval=1mo&range=5y`;
     
     const data = await fetchWithProxy(yahooUrl);
     
@@ -145,13 +145,20 @@ async function refreshAllData() {
 
 let resultChart = null;
 
-async function searchTicker() {
+let currentTicker = '';
+let currentRange = '5y';
+let currentInterval = '1mo';
+
+async function searchTicker(range = '5y', interval = '1mo') {
     const input = document.getElementById('ticker-input');
     const exchangeSelect = document.getElementById('exchange-select');
-    let ticker = input.value.trim().toUpperCase();
+    let ticker = currentTicker || input.value.trim().toUpperCase();
     const exchange = exchangeSelect.value;
 
     if (!ticker) return;
+    currentTicker = ticker;
+    currentRange = range;
+    currentInterval = interval;
 
     // Apply suffixes based on exchange if not already present
     if (exchange === 'KS' && !ticker.endsWith('.KS')) {
@@ -169,63 +176,138 @@ async function searchTicker() {
     const ctx = document.getElementById('resultChart').getContext('2d');
 
     container.style.display = 'block';
-    nameEl.innerText = `Searching for ${ticker}...`;
-
-    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=5m&range=1d`;
+    
+    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=${interval}&range=${range}`;
     
     const data = await fetchWithProxy(yahooUrl);
     
     if (data && data.chart && data.chart.result) {
         const result = data.chart.result[0];
-        const quote = result.indicators.quote[0].close.filter(val => val !== null);
+        const timestamps = result.timestamp;
+        const quotes = result.indicators.quote[0].close;
         const meta = result.meta;
-        const currentPrice = meta.regularMarketPrice;
-        const prevClose = meta.previousClose;
-        const diff = currentPrice - prevClose;
-        const percent = (diff / prevClose) * 100;
-        const color = diff > 0 ? '#00ffa3' : '#ff4d4d';
-
-        nameEl.innerText = `${meta.symbol} (${meta.longName || meta.shortName || meta.symbol})`;
-        valueEl.innerText = currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        changeEl.innerText = `${diff > 0 ? '+' : ''}${diff.toFixed(2)} (${percent.toFixed(2)}%)`;
-        changeEl.className = `index-change ${diff > 0 ? 'up' : 'down'}`;
-
-        if (resultChart) resultChart.destroy();
-
-        resultChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: Array(quote.length).fill(''),
-                datasets: [{
-                    data: quote,
-                    borderColor: color,
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    fill: true,
-                    backgroundColor: createGradient(ctx, color),
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { 
-                    x: { display: false }, 
-                    y: { display: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#a0a0a0' } } 
+        
+        // Clean data: remove nulls and match with timestamps
+        const cleanData = [];
+        const cleanLabels = [];
+        
+        if (timestamps) {
+            timestamps.forEach((ts, i) => {
+                if (quotes[i] !== null) {
+                    cleanData.push(quotes[i]);
+                    const date = new Date(ts * 1000);
+                    // Format label based on range
+                    if (range === '1d') {
+                        cleanLabels.push(date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                    } else {
+                        cleanLabels.push(date.toLocaleDateString([], { month: 'short', day: 'numeric', year: range.includes('y') ? '2-digit' : undefined }));
+                    }
                 }
-            }
-        });
-    } else {
-        nameEl.innerText = `Error: ${ticker}를 찾을 수 없거나 데이터 통신에 실패했습니다.`;
-        valueEl.innerText = '0.00';
-        changeEl.innerText = '0.00 (0.00%)';
-        if (resultChart) {
-            resultChart.destroy();
-            resultChart = null;
+            });
         }
+
+        if (cleanData.length > 0) {
+            const currentPrice = cleanData[cleanData.length - 1];
+            const initialPrice = cleanData[0];
+            const diff = currentPrice - initialPrice;
+            const percent = initialPrice !== 0 ? (diff / initialPrice) * 100 : 0;
+            const color = diff >= 0 ? '#00ffa3' : '#ff4d4d';
+
+            // Clean up name
+            let cleanName = meta.longName || meta.shortName || meta.symbol;
+            cleanName = cleanName.replace(/ (Co\., Ltd\.|Corporation|Inc\.|Ltd\.|PLC|Common Stock)/gi, '').trim();
+
+            nameEl.innerHTML = `<span class="ticker-label">${meta.symbol}</span> <span class="company-name">${cleanName}</span>`;
+            valueEl.innerText = currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            changeEl.innerText = `${diff >= 0 ? '+' : ''}${diff.toFixed(2)} (${percent.toFixed(2)}%)`;
+            changeEl.className = `index-change ${diff >= 0 ? 'up' : 'down'}`;
+
+            if (resultChart) resultChart.destroy();
+
+            resultChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: cleanLabels,
+                    datasets: [{
+                        data: cleanData,
+                        borderColor: color,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 5,
+                        fill: true,
+                        backgroundColor: createGradient(ctx, color),
+                        tension: 0.2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index',
+                    },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: 'rgba(20, 22, 28, 0.9)',
+                            titleColor: '#a0a0a0',
+                            bodyColor: '#ffffff',
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `Price: ${context.parsed.y.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: { 
+                        x: { 
+                            display: true, 
+                            grid: { display: false },
+                            ticks: { 
+                                color: '#606060', 
+                                maxRotation: 0, 
+                                autoSkip: true,
+                                maxTicksLimit: 8
+                            }
+                        }, 
+                        y: { 
+                            display: true, 
+                            grid: { color: 'rgba(255,255,255,0.05)' }, 
+                            ticks: { color: '#a0a0a0', font: { size: 10 } } 
+                        } 
+                    }
+                }
+            });
+        } else {
+            valueEl.innerText = 'N/A';
+            changeEl.innerText = '데이터 없음';
+            if (resultChart) {
+                resultChart.destroy();
+                resultChart = null;
+            }
+        }
+    } else {
+        nameEl.innerText = `Error: Data fetching failed for ${ticker}`;
     }
 }
+
+// Event listeners for range buttons
+document.getElementById('result-range-selector').addEventListener('click', (e) => {
+    if (e.target.tagName === 'BUTTON') {
+        const buttons = document.querySelectorAll('#result-range-selector button');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+        
+        const range = e.target.getAttribute('data-range');
+        const interval = e.target.getAttribute('data-interval');
+        searchTicker(range, interval);
+    }
+});
 
 window.addEventListener('DOMContentLoaded', () => {
     initCharts().then(() => {
@@ -242,8 +324,15 @@ window.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     });
 
-    document.getElementById('search-btn').addEventListener('click', searchTicker);
+    document.getElementById('search-btn').addEventListener('click', () => {
+        currentTicker = ''; // Reset ticker to use input
+        searchTicker('5y', '1mo');
+    });
+    
     document.getElementById('ticker-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') searchTicker();
+        if (e.key === 'Enter') {
+            currentTicker = '';
+            searchTicker('5y', '1mo');
+        }
     });
 });

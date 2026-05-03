@@ -162,13 +162,61 @@ nav {
     animation: fadeIn 0.5s ease;
 }
 
-.result-card {
-    border-color: #6366f1;
-    background: rgba(99, 102, 241, 0.05);
+.result-card .card-header h2 {
+    font-size: 1.4rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.ticker-label {
+    font-weight: 700;
+    color: #6366f1;
+    font-size: 1rem;
+    background: rgba(99, 102, 241, 0.1);
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.company-name {
+    font-weight: 400;
+    color: var(--text-primary);
+}
+
+/* Range Selector */
+.range-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.range-selector button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--card-border);
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.range-selector button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.range-selector button.active {
+    background: var(--primary-gradient);
+    border-color: transparent;
+    color: white;
 }
 
 .result-chart-container {
-    height: 200px !important;
+    height: 350px !important; /* Increased height for better detail */
 }
 
 @keyframes fadeIn {
@@ -213,8 +261,20 @@ nav {
     margin-bottom: 0.5rem;
 }
 
+.title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
 .card-header h2 {
     font-size: 1.1rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.card-subtitle {
+    font-size: 0.75rem;
     color: var(--text-secondary);
     font-weight: 400;
 }

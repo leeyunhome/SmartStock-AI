@@ -44,6 +44,16 @@
                         <span class="index-value" id="result-value">0.00</span>
                     </div>
                     <div class="card-body">
+                        <div class="range-selector" id="result-range-selector">
+                            <button data-range="5y" data-interval="1mo" class="active">5Y</button>
+                            <button data-range="3y" data-interval="1wk">3Y</button>
+                            <button data-range="1y" data-interval="1d">1Y</button>
+                            <button data-range="6mo" data-interval="1d">6M</button>
+                            <button data-range="1mo" data-interval="1d">1M</button>
+                            <button data-range="5d" data-interval="15m">1W</button>
+                            <button data-range="1d" data-interval="5m">1D</button>
+                            <button data-range="1d" data-interval="1m">1H</button>
+                        </div>
                         <span class="index-change" id="result-change">0.00 (0.00%)</span>
                         <div class="chart-container result-chart-container">
                             <canvas id="resultChart"></canvas>
@@ -55,7 +65,10 @@
             <section class="summary-cards">
                 <div class="card" id="kospi-card">
                     <div class="card-header">
-                        <h2>KOSPI</h2>
+                        <div class="title-group">
+                            <h2>KOSPI</h2>
+                            <p class="card-subtitle">한국종합주가지수</p>
+                        </div>
                         <span class="index-value" id="kospi-value">2,543.21</span>
                     </div>
                     <div class="card-body">
@@ -68,7 +81,10 @@
 
                 <div class="card" id="kosdaq-card">
                     <div class="card-header">
-                        <h2>KOSDAQ</h2>
+                        <div class="title-group">
+                            <h2>KOSDAQ</h2>
+                            <p class="card-subtitle">코스닥지수</p>
+                        </div>
                         <span class="index-value" id="kosdaq-value">845.67</span>
                     </div>
                     <div class="card-body">
@@ -81,7 +97,10 @@
 
                 <div class="card" id="nasdaq-card">
                     <div class="card-header">
-                        <h2>NASDAQ</h2>
+                        <div class="title-group">
+                            <h2>NASDAQ</h2>
+                            <p class="card-subtitle">나스닥 종합지수</p>
+                        </div>
                         <span class="index-value" id="nasdaq-value">16,274.94</span>
                     </div>
                     <div class="card-body">
@@ -94,7 +113,10 @@
 
                 <div class="card" id="sp500-card">
                     <div class="card-header">
-                        <h2>S&P 500</h2>
+                        <div class="title-group">
+                            <h2>S&P 500</h2>
+                            <p class="card-subtitle">S&P 500 지수</p>
+                        </div>
                         <span class="index-value" id="sp500-value">5,123.41</span>
                     </div>
                     <div class="card-body">
